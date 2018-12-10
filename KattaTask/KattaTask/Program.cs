@@ -20,12 +20,12 @@ namespace KattaTask
             if (numbers.StartsWith("//"))
             {
                 string[] brackets = { "]", "[" };
-                int index = numbers.IndexOf('\n');
-                int length = index - 2;
+                int index = numbers.IndexOfAny("0123456789".ToCharArray());
+                int length = (index-1) - 2;
                 var only_delimiters = numbers.Substring(2, length);
 
                 delimiters = only_delimiters.Split(brackets, StringSplitOptions.RemoveEmptyEntries);
-                string without_delimiters = numbers.Substring(index + 1); //string after [];
+                string without_delimiters = numbers.Substring(index); //string after [];
                 digits = without_delimiters.Split(delimiters, StringSplitOptions.None);
             }
 
@@ -62,7 +62,8 @@ namespace KattaTask
     {
         static void Main(string[] args)
         {
-            Console.WriteLine(Calculator.Add("-1,2"));
+            Console.WriteLine(Calculator.Add("//;\n1;2"));
+            
         }
     }
 }
