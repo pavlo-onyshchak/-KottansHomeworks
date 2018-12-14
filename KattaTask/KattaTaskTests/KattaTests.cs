@@ -129,18 +129,26 @@ namespace KattaTaskTests
             Assert.AreEqual(calc.Add("//[*][%]\n1*2%3"), 6);
         }
 
-        //[TestMethod]
-        //public void test_Write_function_expected_call_of_function_2()
-        //{
-        //    var log_mock = new Mock<ILogger>();
-        //    var web_mock = new Mock<IWebservice>();
-        //    Calculator calc = new Calculator(log_mock.Object, web_mock.Object);
-        //    calc.Add("//[*][%]\n1*2%3");
-        //    mock.Verify(x => x.Write(It.IsAny<string>(), It.IsAny<string>()), Times.Exactly(2));
+        [TestMethod]
+        public void Logger_throw_exception()
+        {
+            ILogger log = new BrokenLoger();
+            var web_mock = new Mock<IWebservice>();
+            Calculator calc = new Calculator(log, web_mock.Object);
+            calc.Add("//[*][%]\n1*2%3");
+            web_mock.Verify(x => x.show(), Times.Exactly(1));
+        }
 
 
-        //    //Calculator calc = new Calculator(mock.Object);
-        //    //Assert.AreEqual(calc.Add("//[*][%]\n1*2%3"), 6);
-        //}
+        [TestMethod]
+        public void test_Write_function_expected_call_of_function_2()
+        {
+            var log_mock = new Mock<ILogger>();
+            var web_mock = new Mock<IWebservice>();
+            Calculator calc = new Calculator(log_mock.Object, web_mock.Object);
+            calc.Add("//[*][%]\n1*2%3");
+            log_mock.Verify(x => x.Write(It.IsAny<string>(), It.IsAny<string>()), Times.Exactly(2));
+
+        }
     }
 }

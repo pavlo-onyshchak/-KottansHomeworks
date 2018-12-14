@@ -5,7 +5,7 @@ using System.Text;
 using System.IO;
 using System.Security.Permissions;
 using System.Diagnostics;
-using Moq;
+
 
 namespace KattaTask
 {
@@ -16,13 +16,28 @@ namespace KattaTask
 
         ILogger logger = null;
         IWebservice web_service = null;
-        public Calculator(ILogger log,IWebservice web)
+        public Calculator(ILogger log, IWebservice web)
         {
           logger = log;
           web_service = web;
         }
 
         public int Add(string numbers)
+        {
+            int result = 0;
+            try
+            {
+                result = AddInternal(numbers);
+                
+            }
+            catch(IOException e)
+            {
+                web_service.show();
+            }
+            return result;
+        }
+
+        private int AddInternal(string numbers)
         {
           
             logger.Write(numbers, "started");
@@ -88,8 +103,8 @@ namespace KattaTask
     {
         public void Write(string message, string result)
         {
-           // int counter = 0;
-            string path = Path.GetFullPath(@"C: \Users\ponys\Documents\GitHub\-KottansHomeworks\KattaTask\KattaTask\log.txt");
+            string path = Path.GetFullPath(@"E:\-KottansHomeworks\KattaTask\KattaTask\log.txt");
+
             using (StreamWriter streamWriter = new StreamWriter(path, true))
             {
                 if (!File.Exists(path))
@@ -104,6 +119,14 @@ namespace KattaTask
         }
     }
 
+    public class BrokenLoger : ILogger //using for creating logger exception
+    {
+        public void Write(string message, string result)
+        {
+            throw new IOException();
+        }
+    }
+
     public interface IWebservice
     {
         void show();
@@ -113,7 +136,7 @@ namespace KattaTask
     {
         public void show()
         {
-            throw new Exception("loggers exception");
+            Console.WriteLine("loggers exception");
         }
     }
 
@@ -122,20 +145,14 @@ namespace KattaTask
 
    class Program
     {
-
-
-
-
         static void Main(string[] args)
         {
             ILogger obj = new ILog();
+            ILogger obj1 = new BrokenLoger();
             IWebservice web = new IWeb();
             Calculator calc = new Calculator(obj,web);
-            string numbers = "//[*]\n1*2*-2";
-            //int k = calc.Add(numbers);
+            string numbers = "//[*]\n1*2*55";
             Console.WriteLine(calc.Add(numbers));
-           
-
         }
     }
 }
