@@ -2,68 +2,140 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.IO;
+using System.Security.Permissions;
+using System.Diagnostics;
+using Moq;
 
 namespace KattaTask
 {
+
+
     public class Calculator
     {
-        public static int Add(string numbers)
+
+        ILogger logger = null;
+        IWebservice web_service = null;
+        public Calculator(ILogger log,IWebservice web)
         {
+          logger = log;
+          web_service = web;
+        }
+
+        public int Add(string numbers)
+        {
+          
+            logger.Write(numbers, "started");
             if (String.IsNullOrEmpty(numbers))
             {
                 return 0;
             }
 
+
+          
             string[] delimiters = new string[] { ",", "\n" };
             string[] digits = numbers.Split(delimiters, StringSplitOptions.None);
 
-            if (numbers.StartsWith("//"))
-            {
-                string[] brackets = { "]", "[" };
-                int index = numbers.IndexOfAny("0123456789".ToCharArray());
-                int length = (index-1) - 2;
-                var only_delimiters = numbers.Substring(2, length);
-
-                delimiters = only_delimiters.Split(brackets, StringSplitOptions.RemoveEmptyEntries);
-                string without_delimiters = numbers.Substring(index); //string after [];
-                digits = without_delimiters.Split(delimiters, StringSplitOptions.None);
-            }
-
-            int sum = 0;
-            List<string> not_valid_numbers = new List<string>();
-
-            foreach (var element in digits)
-            {
-                int value = Int32.Parse(element);
-                if (value < 0)
+                if (numbers.StartsWith("//"))
                 {
-                    not_valid_numbers.Add(element);
-                    continue;
+                    string[] brackets = { "]", "[" };
+                    int index = numbers.IndexOfAny("0123456789".ToCharArray());
+                    int length = (index - 1) - 2;
+                    var only_delimiters = numbers.Substring(2, length);
+
+                    delimiters = only_delimiters.Split(brackets, StringSplitOptions.RemoveEmptyEntries);
+                    string without_delimiters = numbers.Substring(index); //string after [];
+                    digits = without_delimiters.Split(delimiters, StringSplitOptions.None);
                 }
 
-                if (value > 1000)
+                
+                List<string> not_valid_numbers = new List<string>();
+                int sum = 0;
+                foreach (var element in digits)
                 {
-                    continue;
+                    int value = Int32.Parse(element);
+                    if (value < 0)
+                    {
+                        not_valid_numbers.Add(element);
+                        continue;
+                    }
+
+                    if (value > 1000)
+                    {
+                        continue;
+                    }
+
+                    sum += value;
                 }
 
-                sum += value;
-            }
-
-            if (not_valid_numbers.Count > 0)
-            {
-                throw new ArgumentException("negatives not allowed " + string.Join(",", not_valid_numbers));
-            }
-
+                if (not_valid_numbers.Count > 0)
+                {
+                    throw new ArgumentException("negatives not allowed " + string.Join(",", not_valid_numbers));
+                }
+            logger.Write(numbers, sum.ToString());
+            
             return sum;
+        }
+
+    }
+
+    public interface ILogger
+    {
+        void Write(string message, string result);
+    }
+
+    public class ILog : ILogger
+    {
+        public void Write(string message, string result)
+        {
+           // int counter = 0;
+            string path = Path.GetFullPath(@"C: \Users\ponys\Documents\GitHub\-KottansHomeworks\KattaTask\KattaTask\log.txt");
+            using (StreamWriter streamWriter = new StreamWriter(path, true))
+            {
+                if (!File.Exists(path))
+                {
+                    File.Create(path);
+                }
+                streamWriter.WriteLine("the string is - " + message + " , the result is: " + result);
+                streamWriter.Close();
+
+            }
+
         }
     }
 
-    class Program
+    public interface IWebservice
     {
+        void show();
+    }
+
+    public class IWeb : IWebservice
+    {
+        public void show()
+        {
+            throw new Exception("loggers exception");
+        }
+    }
+
+
+
+
+   class Program
+    {
+
+
+
+
         static void Main(string[] args)
         {
-            Console.WriteLine(Calculator.Add("//;\n1;2"));
-            
+            ILogger obj = new ILog();
+            IWebservice web = new IWeb();
+            Calculator calc = new Calculator(obj,web);
+            string numbers = "//[*]\n1*2*-2";
+            //int k = calc.Add(numbers);
+            Console.WriteLine(calc.Add(numbers));
+           
+
         }
     }
 }
