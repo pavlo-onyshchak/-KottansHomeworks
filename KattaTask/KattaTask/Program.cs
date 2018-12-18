@@ -151,8 +151,23 @@ namespace KattaTask
             ILogger obj1 = new BrokenLoger();
             IWebservice web = new IWeb();
             Calculator calc = new Calculator(obj,web);
-            string numbers = "//[*]\n1*2*55";
-            Console.WriteLine(calc.Add(numbers));
+           
+            if (args.Length != 1)
+            {
+                Console.WriteLine("exactly one parameter");
+                return;
+            }
+
+            while (args[0].Length != 0)
+            {
+                Console.WriteLine("your input is - " + args[0]);
+                Console.WriteLine("The result is - " + calc.Add(args[0]));
+                Console.WriteLine("Next input");
+                args[0] = Console.ReadLine();
+            }
+
+
+
         }
     }
 }
